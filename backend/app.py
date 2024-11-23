@@ -1,33 +1,86 @@
 import feedparser
+import requests
 
 from backend.src.utils.entry_process_util import process_entry
 
 # from wordcloud import WordCloud
 
 
-rss_urls = [
-    r"https://rss.app/feeds/u6rcvfy6PTSf9vQ4.xml",
-    r"https://rss.feedspot.com/uk_car_rss_feeds/",
-]
+# rss_urls = [
+#     r"https://rss.app/feeds/u6rcvfy6PTSf9vQ4.xml",
+#     r"https://rss.feedspot.com/uk_car_rss_feeds/",
+# ]
 # , r"https://rss.app/feeds/MLuDKqkwFtd2tuMr.xml",
 #   r"https://www.autobild.de/rss/22590661.xml",
 #   r"https://rss.app/feed/AY3gpY8fWOkfCCWR"]
 
+rss_urls = [
+    r"https://rss.app/feeds/u6rcvfy6PTSf9vQ4.xml",
+    r"https://www.autoexpress.co.uk/feed/all",
+    r"https://www.autocar.co.uk/rss",
+    r"https://www.fastcar.co.uk/feed",
+    r"https://carbuyer.co.uk/rss/news",
+    r"https://cardealermagazine.co.uk/publish/category/latest-news/feed",
+    r"https://motorso.com/feed",
+    r"https://automotiveblog.co.uk/feed",
+    r"https://www.hiyacar.co.uk/blog/feed.xml",
+    r"https://www.thedrive.co.uk/feed/",
+    r"https://www.ecurie.co.uk/blog?format=rss",
+    r"https://planetauto.co.uk/index.php?format=feed&type=rss",
+    r"https://smart-motoring.com/feed/",
+    r"https://thecarexpert.co.uk/feed",
+    r"https://carwitter.com/feed",
+    r"https://automotiveblog.co.uk/feed",
+    r"https://carblog.co.uk/feed",
+    r"https://splend.co.uk/blog/feed",
+    r"https://whiterecovery.co.uk/feed",
+    r"https://ottocar.co.uk/pco-blog/feed",
+    r"https://thecarscene.co.uk/feed",
+    r"https://www.cashitcaruk.com/blog",
+    r"https://eurocarparts.com/blog/feed",
+    r"https://arrowcarhire.co.uk/feed",
+    r"https://mahimapolyclinictirur.com/",
+    r"https://www.goodbyecar.uk/blog",
+    r"https://co-cars.co.uk/feed",
+    r"https://autobutler.co.uk/blog.atom",
+    r"https://www.evanshalshaw.com/blog/",
+    r"https://frontseatdriver.co.uk/",
+    r"https://www.carmoney.co.uk/resources/blog",
+    r"https://www.stablevehiclecontracts.co.uk/blog/",
+    r"https://www.driving-news.co.uk/",
+    r"https://carfinancegenie.co.uk/feed",
+]
+
+
 articles = {}
 
 for rss_url in rss_urls:
-    feed = feedparser.parse(rss_url)
-    if feed.status == 200:
-        for entry in feed.entries:
-            article_text = process_entry(entry, None)
-            articles[entry.title] = article_text
-    else:
-        continue
+    try:
+        response = requests.get(rss_url, allow_redirects=True, timeout=10)
+        # response.raise_for_status()  # Raise exception for HTTP errors
+        feed = feedparser.parse(rss_url)
+        if feed.get("status") == 301 or feed.get("status") is None:
+            # Save the downloaded file locally
+            with open("feed.xml", "wb") as file:
+                file.write(response.content)
+            with open("feed.xml", "r", encoding="utf-8") as file:
+                feed = feedparser.parse(file.read())
+            for entry in feed.entries:
+                article_text = process_entry(entry, None, rss_url)
+                articles[entry.title] = article_text
+            print("correct")
+        elif feed.get("status") == 200:
+            for entry in feed.entries:
+                article_text = process_entry(entry, None, rss_url)
+                articles[entry.title] = article_text
+            print("correct")
+        else:
+            print(f"Feed at {rss_url} returned status: {feed.get('status')}")
+    except Exception as e:
+        print(f"Error fetching feed from {rss_url}: {e}")
+    # time.sleep(1)  # Add a 1-second delay between requests
 
 keywords = ["electric", "vehicle", "car", "autonomous", "e-vehicle"]
 
 for title in articles.keys():
     print(title + " : \n" + articles[title])
-
-# if keywords in article_text:
-# score += 1 * weightage;

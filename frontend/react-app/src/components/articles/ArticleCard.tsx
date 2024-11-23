@@ -1,5 +1,6 @@
+// src/components/articles/ArticleCard.tsx
 import { motion } from "framer-motion";
-import Card from "../ui/card";
+import { Link } from "react-router-dom";
 import type { Article } from "../../types/article";
 
 interface Props {
@@ -7,27 +8,27 @@ interface Props {
 }
 
 export const ArticleCard = ({ article }: Props) => {
-  const intensity = article.relevanceScore * 100;
-
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      className="relative aspect-square"
-      style={{
-        clipPath:
-          "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-      }}
-    >
-      <Card className="w-full h-full overflow-hidden">
-        <div
-          className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20"
-          style={{ opacity: intensity / 100 }}
-        />
-        <div className="p-4 relative z-10">
-          <h3 className="text-lg font-bold">{article.title}</h3>
-          <p className="text-sm text-gray-200">{article.aiSummary}</p>
+    <Link to={`/article/${article.id}`}>
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="bg-white/5 rounded-lg overflow-hidden"
+      >
+        <div className="p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs">
+              {article.category}
+            </span>
+            <span className="text-gray-400 text-xs">
+              {new Date(article.timestamp).toLocaleDateString()}
+            </span>
+          </div>
+          <h3 className="text-lg font-bold text-white mb-2">{article.title}</h3>
+          <p className="text-gray-300 text-sm line-clamp-2">
+            {article.aiSummary}
+          </p>
         </div>
-      </Card>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 };

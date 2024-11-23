@@ -51,7 +51,12 @@ def clean_content_simple(soup_raw):
     return text_raw.strip()
 
 
-def process_entry(entry, session):
+def process_entry(entry, session, url):
+    # driver = webdriver.Firefox()
+    # driver.get(entry.link)
+    #
+    # html = driver.page_source
+    # soup = BeautifulSoup(html, "html.parser")
     soup = BeautifulSoup(requests.get(entry.link).content, "html.parser")
     # author = None
     # author_tag = soup.find("meta", attrs={"name": "author"}) or soup.find(

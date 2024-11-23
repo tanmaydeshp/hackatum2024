@@ -7,3 +7,9 @@ node_modules/
 
 # Environment variables
 .env
+
+# .idea files
+.idea
+
+# Virtual environment folder
+venv/

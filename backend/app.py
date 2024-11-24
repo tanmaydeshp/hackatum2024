@@ -87,6 +87,12 @@ import numpy as np
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 articles_vec = {}
+from nltk.tokenize import sent_tokenize
+import nltk
+nltk.download('punkt')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+nltk.download('punkt_tab')
 
 for t in articles.keys():
 
@@ -94,9 +100,7 @@ for t in articles.keys():
     long_text = articles[t]
 
     # Split the text into smaller chunks (e.g., by sentences)
-    from nltk.tokenize import sent_tokenize
-    import nltk
-    nltk.download('punkt')
+    
 
     chunks = sent_tokenize(long_text)
 
@@ -173,7 +177,7 @@ def generate_article(topic):
 
     # Convert the list to a prompt
     prompt = f"""Your input is the following topic : {topic}, as well as a collection of source articles joined into a single string:
-                {' \n '.join(input_topics)}. 
+                {' , '.join(input_topics)}. 
                 You must use these articles as sources to generate a high-quality news article about your assigned topic.
                 High quality is defined as follows: Articles should be relevant to the assigned topic. 
                 Articles should be original and complete, or if they rely on other sources, 

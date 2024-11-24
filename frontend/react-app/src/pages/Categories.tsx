@@ -7,20 +7,26 @@ export const Categories = () => {
   const { category } = useParams();
   const { articles, loading } = useArticles();
 
-  if (loading) return <div>Loading...</div>;
-
-  const filteredArticles = category
-    ? articles.filter(
-        (article) => article.category.toLowerCase() === category.toLowerCase()
-      )
-    : articles;
-
   return (
-    <div>
+    <div className="space-y-8">
       <h1 className="text-4xl font-bold text-white mb-8">
         {category ? `${category} Articles` : "All Categories"}
       </h1>
-      <ArticleGrid articles={filteredArticles} columns={3} withAnimation />
+
+      {loading ? (
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+        </div>
+      ) : (
+        <ArticleGrid
+          articles={articles.filter(
+            (article) =>
+              article.category.toLowerCase() === category?.toLowerCase()
+          )}
+          columns={3}
+          withAnimation
+        />
+      )}
     </div>
   );
 };

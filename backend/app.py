@@ -14,7 +14,7 @@ from backend.src.utils.entry_process_util import process_entry
 #   r"https://www.autobild.de/rss/22590661.xml",
 #   r"https://rss.app/feed/AY3gpY8fWOkfCCWR"]
 
-rss_urls = [
+rss_urls = [ 
     r"https://rss.app/feeds/u6rcvfy6PTSf9vQ4.xml",
     r"https://www.autoexpress.co.uk/feed/all",
     r"https://www.autocar.co.uk/rss",
@@ -122,7 +122,7 @@ def top_similar(topic):
     for title in articles.keys():
         score = similarity_score(topic_embed, title)
         title_ratings[title] = score
-        if score>0/6:
+        if score>0.6:
             outputs.append(title)
     if len(outputs) == 0:
         max_title = max(outputs, key=outputs.get)
@@ -151,7 +151,7 @@ def generate_topic(input_titles):
     It is important that you do not plagiarise and that the idea contains your own transformative work."""
 
     # Call the OpenAI API to generate a topic
-    response = openai.Completion.create(
+    response = openai.ChatCompletion.create(
         engine=deployment_id,  # Use your deployment ID
         prompt=prompt,
         max_tokens=50,  # Adjust token limit as needed
@@ -185,7 +185,7 @@ def generate_article(topic):
                 Additionally, they should not contain easily-verifiable factual errors."""
 
     # Call the OpenAI API to generate a similar article
-    response = openai.Completion.create(
+    response = openai.ChatCompletion.create(
         engine=deployment_id,  # Use your deployment ID
         prompt=prompt,
         max_tokens=500,  # Adjust token limit as needed

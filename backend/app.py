@@ -1,5 +1,8 @@
 import feedparser
+import numpy as np
 import requests
+from pymongo import MongoClient
+from sentence_transformers import SentenceTransformer
 
 from backend.src.utils.entry_process_util import process_entry
 
@@ -68,12 +71,12 @@ for rss_url in rss_urls:
             for entry in feed.entries:
                 article_text = process_entry(entry, None, rss_url)
                 articles[entry.title] = article_text
-            print("correct")
+            # print("correct")
         elif feed.get("status") == 200:
             for entry in feed.entries:
                 article_text = process_entry(entry, None, rss_url)
                 articles[entry.title] = article_text
-            print("correct")
+            # print("correct")
         else:
             print(f"Feed at {rss_url} returned status: {feed.get('status')}")
     except Exception as e:
@@ -84,3 +87,73 @@ keywords = ["electric", "vehicle", "car", "autonomous", "e-vehicle"]
 
 for title in articles.keys():
     print(title + " : \n" + articles[title])
+
+# Load the model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+articles_vec = {}
+
+for t in articles.keys():
+    # Example long text (replace with your article)
+    long_text = articles[t]
+
+    # Split the text into smaller chunks (e.g., by sentences)
+    import nltk
+    from nltk.tokenize import sent_tokenize
+
+    nltk.download("punkt")
+
+    chunks = sent_tokenize(long_text)
+
+    # Compute embeddings for each chunk
+    chunk_embeddings = model.encode(chunks)
+
+    # Aggregate embeddings (e.g., by averaging)
+    article_embedding = np.mean(chunk_embeddings, axis=0)
+    articles_vec[t] = article_embedding
+
+# DATABASE
+
+
+def load_source_articles_to_db(article, collection, articles_vec):
+    # Iterate through articles and insert them into the database
+    for title, content in article.items():
+        try:
+            # TODO embedding has to be a string
+            #   or some other representation to add it to the document
+            e = articles_vec[title].toString()
+            document = {"title": title, "content": content, "emb": e}
+
+            # Insert the document into the MongoDB collection
+            collection.insert_one(document)
+            print(f"Inserted article: {title}")
+        except Exception as et:
+            print(f"Error inserting article '{title}': {et}")
+
+
+# Connection string (local or Atlas)
+CONNECTION_STRING = "mongodb://localhost:27017/"  # For local MongoDB
+# Create a MongoDB client
+client = MongoClient(CONNECTION_STRING)
+
+# Access a database (creates it if it doesn’t exist)
+db = client["my_database"]
+
+# Access a collection (creates it if it doesn’t exist)
+collection_new = db["new_ai_generated_articles"]
+collection_source = db["source_articles"]
+
+# Insert a document
+# collection_source.insert_one({"title": "Alice",
+#   "content": 25,"embedding":""})
+load_source_articles_to_db(articles, collection_source, articles_vec)
+# TODO read data from source and analyze it
+# TODO Put new generated articles in collection_new
+# TODO use the collection_new for frontend to display
+
+# Query example
+result = collection_source.find_one({"title": "Alice"})
+print(result)
+
+# Close the connection
+client.close()
